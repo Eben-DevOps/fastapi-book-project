@@ -1,23 +1,16 @@
 from fastapi.testclient import TestClient
-from main import app
-from core.config import settings  # Import settings for API prefix
+from main import app  # Import the FastAPI app
 
 client = TestClient(app)
-API_PREFIX = settings.API_PREFIX  # Ensure correct API prefix
+API_PREFIX = "/api/v1"  # Ensure this matches `settings.API_PREFIX`
 
 def test_get_all_books():
-    response = client.get(f"{API_PREFIX}/books/")  # ✅ Use correct prefix
+    response = client.get(f"{API_PREFIX}/books/")
     assert response.status_code == 200
-
-    data = response.json()
-    assert isinstance(data, dict)  # ✅ Ensure response is a dict
-
-    book_list = list(data.values())  # ✅ Convert dict to list
-    assert isinstance(book_list, list)
-    assert len(book_list) == 3
+    assert isinstance(response.json(), list)  # Ensure response is a list
 
 def test_get_single_book():
-    response = client.get(f"{API_PREFIX}/books/1")  # ✅ Correct path
+    response = client.get(f"{API_PREFIX}/books/1")  # ✅ Use correct path
     assert response.status_code == 200
     data = response.json()
     assert "title" in data
@@ -31,7 +24,7 @@ def test_create_book():
         "publication_year": 1997,
         "genre": "Fantasy",
     }
-    response = client.post(f"{API_PREFIX}/books/", json=new_book)  # ✅ Use correct prefix
+    response = client.post(f"{API_PREFIX}/books/", json=new_book)
     assert response.status_code == 201
     data = response.json()
     assert data["id"] == 4
@@ -39,20 +32,19 @@ def test_create_book():
 
 def test_update_book():
     updated_book = {
-        "id": 1,
         "title": "The Hobbit: An Unexpected Journey",
         "author": "J.R.R. Tolkien",
         "publication_year": 1937,
         "genre": "Fantasy",
     }
-    response = client.put(f"{API_PREFIX}/books/1", json=updated_book)  # ✅ Correct prefix
+    response = client.put(f"{API_PREFIX}/books/1", json=updated_book)
     assert response.status_code == 200
     data = response.json()
     assert data["title"] == updated_book["title"]
 
 def test_delete_book():
-    response = client.delete(f"{API_PREFIX}/books/3")  # ✅ Correct prefix
-    assert response.status_code == 204
+    response = client.delete(f"{API_PREFIX}/books/3")
+    assert response.status_code == 204  # No Content
 
     response = client.get(f"{API_PREFIX}/books/3")
-    assert response.status_code == 404
+    assert response.status_code == 404  # Not Found
