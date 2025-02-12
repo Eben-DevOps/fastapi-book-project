@@ -20,8 +20,21 @@ jobs:
 
       - name: Install Dependencies
         run: |
+          python -m venv venv
+          source venv/bin/activate
+          pip install --upgrade pip
           pip install -r requirements.txt
+
+      - name: Start FastAPI in the Background
+        run: |
+          source venv/bin/activate
+          uvicorn main:app --host 0.0.0.0 --port 8000 &
+
+      - name: Wait for FastAPI to Start
+        run: |
+          sleep 5  # Allow FastAPI time to start
 
       - name: Run Tests
         run: |
-          pytest --disable-warnings
+          source venv/bin/activate
+          pytest --disable-warnings --maxfail=1
