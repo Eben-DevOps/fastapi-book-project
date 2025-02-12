@@ -22,19 +22,6 @@ jobs:
         run: |
           pip install -r requirements.txt
 
-      - name: Start FastAPI in the Background
-        run: |
-          nohup uvicorn main:app --host 0.0.0.0 --port 8000 > fastapi.log 2>&1 &
-
-      - name: Wait for FastAPI to Start
-        run: |
-          echo "⌛ Waiting for FastAPI to start..."
-          timeout 60 sh -c 'until curl --output /dev/null --silent --head --fail http://127.0.0.1:8000; do sleep 2; done' || (echo "❌ FastAPI failed to start" && exit 1)
-
       - name: Run Tests
         run: |
           pytest --disable-warnings
-
-      - name: Debug Logs on Failure
-        if: failure()
-        run: cat fastapi.log
