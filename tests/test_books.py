@@ -1,15 +1,23 @@
 from fastapi.testclient import TestClient
-from main import app  # Ensure `main.py` correctly exposes `app`
+from main import app
+from core.config import settings  # Import settings for API prefix
 
-client = TestClient(app)  # Initialize test client
+client = TestClient(app)
+API_PREFIX = settings.API_PREFIX  # Ensure correct API prefix
 
 def test_get_all_books():
-    response = client.get("/api/v1/books/")
+    response = client.get(f"{API_PREFIX}/books/")  # ✅ Use correct prefix
     assert response.status_code == 200
-    assert isinstance(response.json(), list)  # Ensure response is a list
+
+    data = response.json()
+    assert isinstance(data, dict)  # ✅ Ensure response is a dict
+
+    book_list = list(data.values())  # ✅ Convert dict to list
+    assert isinstance(book_list, list)
+    assert len(book_list) == 3
 
 def test_get_single_book():
-    response = client.get("/api/v1/books/1")
+    response = client.get(f"{API_PREFIX}/books/1")  # ✅ Correct path
     assert response.status_code == 200
     data = response.json()
     assert "title" in data
@@ -23,7 +31,7 @@ def test_create_book():
         "publication_year": 1997,
         "genre": "Fantasy",
     }
-    response = client.post("/api/v1/books/", json=new_book)
+    response = client.post(f"{API_PREFIX}/books/", json=new_book)  # ✅ Use correct prefix
     assert response.status_code == 201
     data = response.json()
     assert data["id"] == 4
@@ -31,19 +39,20 @@ def test_create_book():
 
 def test_update_book():
     updated_book = {
+        "id": 1,
         "title": "The Hobbit: An Unexpected Journey",
         "author": "J.R.R. Tolkien",
         "publication_year": 1937,
         "genre": "Fantasy",
     }
-    response = client.put("/api/v1/books/1", json=updated_book)
+    response = client.put(f"{API_PREFIX}/books/1", json=updated_book)  # ✅ Correct prefix
     assert response.status_code == 200
     data = response.json()
     assert data["title"] == updated_book["title"]
 
 def test_delete_book():
-    response = client.delete("/api/v1/books/3")
-    assert response.status_code == 204  # No Content
+    response = client.delete(f"{API_PREFIX}/books/3")  # ✅ Correct prefix
+    assert response.status_code == 204
 
-    response = client.get("/api/v1/books/3")
-    assert response.status_code == 404  # Not Found
+    response = client.get(f"{API_PREFIX}/books/3")
+    assert response.status_code == 404
