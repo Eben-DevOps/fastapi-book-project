@@ -1,0 +1,45 @@
+name: Deploy to Azure VM
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v3
+
+      - name: Set up SSH Key
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.AZURE_SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
+          ssh-keyscan -H 172.166.192.99 >> ~/.ssh/known_hosts
+
+      - name: Test SSH Connection
+        run: ssh -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no chef@172.166.192.99 "echo SSH connection successful"
+
+      - name: Deploy to Azure VM
+        run: |
+          ssh -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no chef@172.166.192.99 << 'EOF'
+            if [ -d "/home/chef/fastapi-book-project" ]; then
+              cd /home/chef/fastapi-book-project
+              git pull origin main
+            else
+              git clone https://github.com/Eben-DevOps/fastapi-book-project.git /home/chef/fastapi-book-project
+              cd /home/chef/fastapi-book-project
+            fi
+
+            # Stop and remove all running containers
+            docker-compose down
+
+            # Remove all unused Docker images, networks, and volumes
+            docker system prune -a -f
+
+            # Rebuild and start the containers
+            docker-compose up --build -d
+          EOF
