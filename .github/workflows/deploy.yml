@@ -40,7 +40,7 @@ jobs:
               git pull origin main
             else
               echo "🚀 Cloning repository..."
-              git clone https://github.com/Eben-DevOps/fastapi-book-project.git .
+              git clone https://${{ secrets.GITHUB_TOKEN }}@github.com/Eben-DevOps/fastapi-book-project.git .
             fi
 
             # Stop running containers
