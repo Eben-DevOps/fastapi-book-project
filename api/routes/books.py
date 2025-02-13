@@ -33,13 +33,11 @@ db.books = {
 }
 
 
-@router.get("/books/{book_id}", response_model=Book, status_code=status.HTTP_200_OK)
-async def get_book_by_id(book_id: int):
-    """Retrieve a book by its ID"""
-    book = db.books.get(book_id)
-    if not book:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Book not found")
-    return book
+@router.get("/", response_model=List[Book], status_code=status.HTTP_200_OK)
+async def get_books() -> List[Book]:
+    """Retrieve all books as a list"""
+    return list(db.get_books().values())  # ✅ Convert OrderedDict to a list
+
 
 
 @router.post("/", status_code=status.HTTP_201_CREATED)
