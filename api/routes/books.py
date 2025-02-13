@@ -31,7 +31,7 @@ db.books = {
     ),
 }
 
-@router.get("/books/{book_id}", response_model=Book, status_code=status.HTTP_200_OK)
+@router.get("/{book_id}", response_model=Book, status_code=status.HTTP_200_OK)
 async def get_book_by_id(book_id: int):
     """Retrieve a book by its ID"""
     book = db.books.get(book_id)
@@ -52,12 +52,11 @@ async def get_books() -> List[Book]:
 
 @router.put("/{book_id}", response_model=Book, status_code=status.HTTP_200_OK)
 async def update_book(book_id: int, book: Book) -> Book:
-    return JSONResponse(
-        status_code=status.HTTP_200_OK,
-        content=db.update_book(book_id, book).model_dump(),
-    )
+    """Update a book by its ID"""
+    return db.update_book(book_id, book)  # ✅ Return the updated Book object
 
 @router.delete("/{book_id}", status_code=status.HTTP_204_NO_CONTENT)
 async def delete_book(book_id: int) -> None:
+    """Delete a book by its ID"""
     db.delete_book(book_id)
     return JSONResponse(status_code=status.HTTP_204_NO_CONTENT, content=None)
