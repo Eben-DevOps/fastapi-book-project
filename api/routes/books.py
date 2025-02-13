@@ -1,5 +1,4 @@
-from typing import OrderedDict
-
+from typing import List
 from fastapi import APIRouter, status, HTTPException
 from fastapi.responses import JSONResponse
 
@@ -32,15 +31,13 @@ db.books = {
     ),
 }
 
-
-@router.get("/books/{book_id}", response_model=Book, status_code=status.HTTP_200_OK)
+@router.get("/{book_id}", response_model=Book, status_code=status.HTTP_200_OK)
 async def get_book_by_id(book_id: int):
     """Retrieve a book by its ID"""
     book = db.books.get(book_id)
     if not book:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Book not found")
     return book
-
 
 @router.post("/", status_code=status.HTTP_201_CREATED)
 async def create_book(book: Book):
@@ -49,23 +46,17 @@ async def create_book(book: Book):
         status_code=status.HTTP_201_CREATED, content=book.model_dump()
     )
 
-
-@router.get(
-    "/", response_model=OrderedDict[int, Book], status_code=status.HTTP_200_OK
-)
-async def get_books() -> OrderedDict[int, Book]:
-    return db.get_books()
-
+@router.get("/", response_model=List[Book], status_code=status.HTTP_200_OK)
+async def get_books() -> List[Book]:
+    return list(db.get_books().values())  # ✅ Convert dictionary values to list
 
 @router.put("/{book_id}", response_model=Book, status_code=status.HTTP_200_OK)
 async def update_book(book_id: int, book: Book) -> Book:
-    return JSONResponse(
-        status_code=status.HTTP_200_OK,
-        content=db.update_book(book_id, book).model_dump(),
-    )
-
+    """Update a book by its ID"""
+    return db.update_book(book_id, book)  # ✅ Return the updated Book object
 
 @router.delete("/{book_id}", status_code=status.HTTP_204_NO_CONTENT)
 async def delete_book(book_id: int) -> None:
+    """Delete a book by its ID"""
     db.delete_book(book_id)
     return JSONResponse(status_code=status.HTTP_204_NO_CONTENT, content=None)

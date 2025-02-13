@@ -32,10 +32,11 @@ def test_create_book():
 
 def test_update_book():
     updated_book = {
+        "id": 1,  # Include the ID if required by the schema
         "title": "The Hobbit: An Unexpected Journey",
         "author": "J.R.R. Tolkien",
         "publication_year": 1937,
-        "genre": "Fantasy",
+        "genre": "FANTASY",  # Ensure it matches your Enum values
     }
     response = client.put(f"{API_PREFIX}/books/1", json=updated_book)
     assert response.status_code == 200

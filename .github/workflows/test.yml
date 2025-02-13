@@ -21,14 +21,29 @@ jobs:
         with:
           python-version: "3.10"
 
+      - name: Cache dependencies
+        uses: actions/cache@v3
+        with:
+          path: venv
+          key: venv-${{ runner.os }}-${{ hashFiles('requirements.txt') }}
+          restore-keys: |
+            venv-${{ runner.os }}-
+
       - name: Install dependencies
         run: |
           python -m venv venv
           source venv/bin/activate
           pip install --upgrade pip
           pip install -r requirements.txt
+          pip install pytest pytest-cov  # Install pytest and coverage plugin
 
       - name: Run tests with pytest
         run: |
           source venv/bin/activate
-          pytest --disable-warnings --maxfail=1
+          pytest --disable-warnings --maxfail=1 -v --cov=your_module_name --cov-report=xml
+
+      - name: Upload coverage report
+        uses: codecov/codecov-action@v3
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}  # Optional: Only if using Codecov
+          file: coverage.xml
